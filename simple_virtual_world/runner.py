@@ -1,3 +1,4 @@
+
 from mesa import Agent, Model
 from mesa.space import MultiGrid
 import math

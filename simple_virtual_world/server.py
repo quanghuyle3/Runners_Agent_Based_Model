@@ -21,11 +21,13 @@ def cell(agent):
         portrayal['Color'] = '#237308'
     elif agent.type == 'grass':
         portrayal['Color'] = '#4ECA24'
-<<<<<<< Updated upstream
+
+
+<< << << < Updated upstream
     elif agent.type == 'runner':
-=======
+== == == =
     elif agent.type == 'type1':
->>>>>>> Stashed changes
+>>>>>> > Stashed changes
         portrayal['Shape'] = 'circle'
         portrayal['r'] = '0.7'
         portrayal['Layer'] = 1

@@ -342,12 +342,14 @@ class VirtualWorldModel(Model):
             runner = RunnerAgent(i, self)
             # store the inital position as attribte
             runner.init_position = self.random.choice(self.roads)
-<<<<<<< Updated upstream
+
+
+<< << << < Updated upstream
             print('Initial position: ', runner.init_position)
-=======
+== == == =
             # runner.init_position = (46, 21)
             # print('Initial position: ', runner.init_position)
->>>>>>> Stashed changes
+>>>>>> > Stashed changes
             self.grid.place_agent(runner, runner.init_position)
             self.schedule.add(runner)
 
