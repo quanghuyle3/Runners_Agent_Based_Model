@@ -22,12 +22,7 @@ def cell(agent):
     elif agent.type == 'grass':
         portrayal['Color'] = '#4ECA24'
 
-
-<< << << < Updated upstream
-    elif agent.type == 'runner':
-== == == =
     elif agent.type == 'type1':
->>>>>> > Stashed changes
         portrayal['Shape'] = 'circle'
         portrayal['r'] = '0.7'
         portrayal['Layer'] = 1
@@ -43,14 +38,8 @@ def cell(agent):
 
 
 grid = CanvasGrid(cell, 50, 50, 600, 600)
-# chart = ChartModule([{'Label': 'Num_mov_agents', 'Color': 'Black'}])
-
-<<<<<<< Updated upstream
-server = ModularServer(VirtualWorldModel, [grid], "Virtual World", {'N': 1,
-=======
-server = ModularServer(VirtualWorldModel, [grid], "Virtual World", {'N': 10,
->>>>>>> Stashed changes
-                                                                    'width': 50, 'height': 50})
+server = ModularServer(VirtualWorldModel, [grid], "Virtual World", {
+                       'N': 50, 'width': 50, 'height': 50})
 server.port = 8000
 
 server.launch()

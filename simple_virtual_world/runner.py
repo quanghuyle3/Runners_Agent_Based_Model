@@ -9,12 +9,11 @@ class RunnerAgent(Agent):
 
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        self.type = 'type1'
-        # self.type = self.random.choice(['type1', 'type2'])
+        # self.type = 'type1'
+        self.type = self.random.choice(['type1', 'type2'])
         if self.type == 'type2':
             self.on_road = True
             self.on_trail = False
-            # self.on_way_running = True
             self.on_way_home = False
             self.entrance_trail_pos = None
             self.exit_trail_pos = None
@@ -22,13 +21,11 @@ class RunnerAgent(Agent):
             self.ready_to_exit_trail = False
             self.start_the_trail_run = False
             self.exit_the_trail_going_home = False
-            # self.get_to_the_first_intersection = False
 
         self.direction = None
         self.count = 0
         self.distance_goal = 160
         self.want_to_go_home = False  # for type 1 & TYPE 2
-        # {(x,y):[(),(),(),..]
         self.intersection_memory = {}  # for type 1 & TYPE 2
         self.memory_on_way_home = {}  # for type 1 & TYPE 2
         self.num_intersection_from_going_home_point = 0  # for type 1 & TYPE 2
@@ -45,7 +42,6 @@ class RunnerAgent(Agent):
 
         self.count += 1
 
-        # try:
         if self.type == 'type1':
             if self.state == '_continue_forward':
                 self.continue_forward()
@@ -57,9 +53,6 @@ class RunnerAgent(Agent):
                 self.dead_end()
             elif self.state == '_decide_way_go_home':
                 self.decide_way_go_home()
-
-            # elif self.state == 'rest':
-            #     print('ID: ', self.unique_id, 'DONE\n\n\next_pos')
 
         if self.type == 'type2':
             if self.state == '_decide_way_to_get_to_trail_entrance':
@@ -76,8 +69,6 @@ class RunnerAgent(Agent):
                 self.decide_way_to_get_to_trail_exit()
             elif self.state == '_decide_way_go_home':
                 self.decide_way_go_home()
-            # elif self.state == 'rest':
-            #     print('ID: ', self.unique_id, 'DONE\n\n\next_pos')
 
         if self.pos == self.init_position and self.count >= self.distance_goal:
             self.state = 'rest'
@@ -85,7 +76,6 @@ class RunnerAgent(Agent):
     def continue_forward(self):
         '''MOVING FORWARD'''
         # Initially, start with no direction
-        # print('continue - type 1')
         if self.direction == None:
 
             # if start at a dead end, then runner memorize to mark road out of intersection
@@ -122,13 +112,10 @@ class RunnerAgent(Agent):
         # CHANGE STATE IF NECESSARY
         # facing trail, dead end
         if len(self._get_road_cell_around()) == 1:
-            # print('CHANGE STATE 1')
             self.state = '_dead_end'
         # at the corner of road
         elif len(self._get_road_cell_around()) == 2 and self._get_road_cell_forward() == False:
-            # print('CHANGE STATE 2')
             if self.count >= self.distance_goal and self.want_to_go_home == False:
-                # print('corner and want to go home')
                 self.state = '_decide_way_go_home'
                 self.want_to_go_home = True
                 self.num_intersection_from_going_home_point += 1
@@ -136,18 +123,13 @@ class RunnerAgent(Agent):
                 self.state = '_corner_of_road'
         # at the intersection and have to turn
         elif len(self._get_road_cell_around()) > 2:
-            # print('CHANGE STATE 3')
-
-            # print(self.intersection_memory)
 
             # STORE DEAD END ROAD if on the way getting out of it and at intersection
             if self.getting_out_of_deadend:
                 self.road_to_dead_end.append(self._get_road_cell_behind())
                 self.getting_out_of_deadend = False
-                # print(self.road_to_dead_end)
 
             if self.count >= self.distance_goal:
-                # print('FIND WAY HOME')
                 self.state = '_decide_way_go_home'
                 self.want_to_go_home = True
                 self.num_intersection_from_going_home_point += 1
@@ -159,36 +141,22 @@ class RunnerAgent(Agent):
 
     # Continue forward for type 2
     def continue_forward_type2(self):
-        # THIS PART IS USED FOR TYPE 2
-
         # At the entrance of trail, enter it
         if self.ready_to_enter_trail:
             next_position = self._get_trail_cell_around()[0]
             self.exit_trail_pos = next_position
-            # print('Exit trail position: ', self.exit_trail_pos)
             self.ready_to_enter_trail = False
-            # self.on_way_running = False
             self.start_the_trail_run = True
-            # self.get_to_the_first_intersection = True
             self.on_road = False
             self.on_trail = True
 
         # At the exit of trail, READY TO ENTERING ROAD AGAIN TO GO HOME
         elif self.ready_to_exit_trail:
-            # print('Get position')
             next_position = self._get_road_cell_around()[0]
             self.ready_to_exit_trail = False
             self.exit_the_trail_going_home = True
             self.on_road = True
             self.on_trail = False
-
-        # # Go forward after entering the trail
-        # elif self.ready_to_enter_trail == False and self.on_trail:
-        #     next_position = self._get_trail_cell_forward()
-
-        # # Go forward after exiting the trail
-        # elif self.ready_to_enter_trail == False and self.on_trail:
-        #     next_position = self._get_trail_cell_forward()
 
         # on road, start, haven't got to trail yet (NORMAL)
         elif self.on_road:
@@ -202,17 +170,13 @@ class RunnerAgent(Agent):
         if self.getting_out_of_deadend == True and self.pos == self.init_position:
             self.getting_out_of_deadend = False
             self.start_from_dead_end_road = True
-            # print('Set to False again')
 
         # at the entrance trail, about to start the trail running
         if self.pos == self.entrance_trail_pos and self.count < self.distance_goal:
-            # print('READY TO Enter')
             self.ready_to_enter_trail = True
-            # self.on_road = False
 
         # at the exit trail, about to get on the road and go home
         if self.pos == self.exit_trail_pos and self.count >= self.distance_goal:
-            # print('READY TO EXIT')
             self.ready_to_exit_trail = True
 
         self._check_to_change_state_type2()
@@ -226,24 +190,19 @@ class RunnerAgent(Agent):
                 self.state = '_continue_forward_type2'
             # just start going home from the entrance
             elif len(self._get_trail_cell_around()) == 1 and self.exit_the_trail_going_home:
-                # print('Change state to go forward')
                 self.state = '_continue_forward_type2'
                 self.exit_the_trail_going_home = False
             # facing dead end
             elif len(self._get_road_cell_around()) == 1:
-                # print('CHANGE STATE to dead end')
                 self.state = '_dead_end'
             # still on road
             elif len(self._get_road_cell_around()) == 2 and self._get_road_cell_forward() != False:
-                # print('CHANGE STATE to CONTINUE FORWARD')
                 self.state = '_continue_forward_type2'
             # at the corner of road
             elif len(self._get_road_cell_around()) == 2 and self._get_road_cell_forward() == False:
-                # print('CHANGE STATE to CORNER of road')
                 self.state = '_corner_of_road'
             # at intersection on road
             elif len(self._get_road_cell_around()) > 2:
-                # print('KEEP')
 
                 # on way home, at intersection, need the closest way to home
                 if self.count >= self.distance_goal:
@@ -258,7 +217,6 @@ class RunnerAgent(Agent):
 
                 # store the dead end road if on the way getting out of it and at intersection
                 if self.getting_out_of_deadend:
-                    # print('RUN')
                     if self._get_road_cell_behind() not in self.road_to_dead_end:
                         self.road_to_dead_end.append(
                             self._get_road_cell_behind())
@@ -274,20 +232,16 @@ class RunnerAgent(Agent):
 
             # just start running at the trail
             elif len(self._get_trail_cell_around()) == 1 and self.start_the_trail_run:
-                # print('Change state to go forward')
                 self.state = '_continue_forward_type2'
                 self.start_the_trail_run = False
             # facing dead end
             elif len(self._get_trail_cell_around()) == 1:
-                # print('Change state to dead end')
                 self.state = '_dead_end'
             # still on trail
             elif len(self._get_trail_cell_around()) == 2 and self._get_trail_cell_forward() != False:
-                # print('Change state to continue forward')
                 self.state = '_continue_forward_type2'
             # at the corner of trail
             elif len(self._get_trail_cell_around()) == 2 and self._get_trail_cell_forward() == False:
-                # print('Change state to corner of road')
 
                 # Pass the distance goal
                 if self.count >= self.distance_goal and self.num_intersection_from_going_home_point == 0:
@@ -302,7 +256,6 @@ class RunnerAgent(Agent):
 
                 # at intersection on trail
             elif len(self._get_trail_cell_around()) > 2:
-                # print('KEEP')
 
                 # Pass the distance goal
                 if self.count >= self.distance_goal:
@@ -315,13 +268,9 @@ class RunnerAgent(Agent):
                 else:
                     # Normally
                     self.state = '_intersection_on_trail'
-                    # if self.get_to_the_first_intersection:
-                    #     self.trail_cell_behind_first_intersection = self._get_trail_cell_behind()
-                    #     self.get_to_the_first_intersection = False
 
                 # store the dead end road if on the way getting out of it and at intersection
                 if self.getting_out_of_deadend:
-                    # print('RUN')
                     if self._get_trail_cell_behind() not in self.road_to_dead_end:
                         self.road_to_dead_end.append(
                             self._get_trail_cell_behind())
@@ -338,8 +287,6 @@ class RunnerAgent(Agent):
             next_position = self._get_road_cell_behind()
         elif self.type == 'type2' and self.on_trail:
             next_position = self._get_trail_cell_behind()
-
-        # print('TYPE2 ', self.pos, ' ', self.exit_trail_pos)
 
         # let runner memorize this is dead end to store infor once getting to the intersection
         self.getting_out_of_deadend = True
@@ -401,7 +348,6 @@ class RunnerAgent(Agent):
         direction = self._check_direction_of_point(
             self.pos, self.init_position)
         road_cells = self._get_road_cell_around()
-        # print('ROAD CELLS: ', road_cells)
         prefer_roads = []
 
         # set a prefer roads list to take consideration
@@ -409,7 +355,6 @@ class RunnerAgent(Agent):
 
         # choose a road randomly from the prefer road, if don't have prefer road, choose one of the other non-prefer roads
         # without considering roads leading to dead end and road just passed
-        # print(direction)
 
         # remove roads leading to dead_end but not home
         if len(self.road_to_dead_end) > 0:
@@ -418,7 +363,6 @@ class RunnerAgent(Agent):
                     prefer_roads.remove(cell)
                 if cell in road_cells:
                     road_cells.remove(cell)
-        # print('ROAD TO DEAD END: ', self.road_to_dead_end)
 
         road_consider = road_cells.copy()
 
@@ -430,8 +374,6 @@ class RunnerAgent(Agent):
                 if cell in road_consider:
                     road_consider.remove(cell)
 
-        # print('PREFER ROAD: ', prefer_roads)
-
         if len(prefer_roads) > 0:
             next_position = self.random.choice(prefer_roads)
             # print('CHOOSE: ', next_position)
@@ -439,9 +381,6 @@ class RunnerAgent(Agent):
             next_position = self.random.choice(road_consider)
         elif len(road_cells) > 0:
             next_position = self.random.choice(road_cells)
-        # else:
-        #     next_position = self.random.choice(self._get_road_cell_around())
-            # self._get_road_cell_around())
 
         # place agent, set new direction, change state
         self._set_new_direction_place_agent(next_position)
@@ -456,38 +395,17 @@ class RunnerAgent(Agent):
 
     def intersection_on_trail(self):
         # CHOOSE PREFER TRAIL: STRAIGHT, RIGHT, LEFT, THEN CHOOSE ONE FIRST USE TO ENTER INTERS
-        if not self.on_way_home:  # still running and experiencing the trail
-            if self._get_trail_cell_forward() and self._get_trail_cell_forward() not in self.intersection_memory[self.pos]:
-                next_position = self._get_trail_cell_forward()
-            elif self._get_trail_cell_right() and (self._get_trail_cell_right() not in self.intersection_memory[self.pos]):
-                next_position = self._get_trail_cell_right()
-            elif self._get_trail_cell_left() and (self._get_trail_cell_left() not in self.intersection_memory[self.pos]):
-                next_position = self._get_trail_cell_left()
-            # elif (self.intersection_memory[self.pos][0] not in self.road_to_dead_end) and (self.intersection_memory[self.pos][0] not in self.mark_road_to_home_dead_end):
-            #     next_position = self.intersection_memory[self.pos][0]
-            else:
-                possible_steps = self._get_trail_cell_around()
-                possible_steps.remove(self._get_trail_cell_behind())
+        if self._get_trail_cell_forward() and self._get_trail_cell_forward() not in self.intersection_memory[self.pos]:
+            next_position = self._get_trail_cell_forward()
+        elif self._get_trail_cell_right() and (self._get_trail_cell_right() not in self.intersection_memory[self.pos]):
+            next_position = self._get_trail_cell_right()
+        elif self._get_trail_cell_left() and (self._get_trail_cell_left() not in self.intersection_memory[self.pos]):
+            next_position = self._get_trail_cell_left()
+        else:
+            possible_steps = self._get_trail_cell_around()
+            possible_steps.remove(self._get_trail_cell_behind())
 
-                next_position = self.random.choice(possible_steps)
-
-        # elif self.on_way_to_home:
-        #     if self._get_trail_cell_forward() and self._get_trail_cell_forward() not in self.intersection_memory[self.pos]:
-        #         next_position = self._get_trail_cell_forward()
-        #     elif self._get_trail_cell_right() and (self._get_trail_cell_right() not in self.intersection_memory[self.pos]):
-        #         next_position = self._get_trail_cell_right()
-        #     elif self._get_trail_cell_left() and (self._get_trail_cell_left() not in self.intersection_memory[self.pos]):
-        #         next_position = self._get_trail_cell_left()
-        #     elif (self.intersection_memory[self.pos][0] not in self.road_to_dead_end) and (self.intersection_memory[self.pos][0] not in self.mark_road_to_home_dead_end):
-        #         next_position = self.intersection_memory[self.pos][0]
-        #     else:
-        #         possible_steps = self._get_trail_cell_around()
-
-        #         if self._get_trail_cell_behind() != self.intersection_memory[self.pos][0]:
-        #             possible_steps.remove(self._get_trail_cell_behind())
-        #         possible_steps.remove(self.intersection_memory[self.pos][0])
-
-        #         next_position = self.random.choice(possible_steps)
+            next_position = self.random.choice(possible_steps)
 
         # set new direction and move agent
         self._set_new_direction_place_agent(next_position)
@@ -576,7 +494,6 @@ class RunnerAgent(Agent):
         # Start at entrance trail (rare case but possible)
         if self.pos == self.entrance_trail_pos:
             self.ready_to_enter_trail = True
-            # self.on_road = False
 
         # Otherwise, do normal
         else:
@@ -595,10 +512,7 @@ class RunnerAgent(Agent):
             direction = self._check_direction_of_point(
                 self.pos, self.target_point)
             road_cells = self._get_road_cell_around()
-            # print('ROAD CELLS: ', road_cells)
             prefer_roads = []
-            # print('Select entrance: ', self.entrance_trail_pos)
-            # print(direction)
 
             # set a prefer roads list to take consideration
             self._set_prefer_roads(prefer_roads, direction, road_cells)
@@ -610,7 +524,6 @@ class RunnerAgent(Agent):
                         prefer_roads.remove(cell)
                     if cell in road_cells:
                         road_cells.remove(cell)
-            # print('ROAD TO DEAD END: ', self.road_to_dead_end)
 
             road_consider = road_cells.copy()
 
@@ -621,13 +534,9 @@ class RunnerAgent(Agent):
                         prefer_roads.remove(cell)
                     if cell in road_consider:
                         road_consider.remove(cell)
-            # print('AFTER REMOVE ROADS HAVE BEEN USED')
-
-            # print('PREFER ROAD: ', prefer_roads)
 
             if len(prefer_roads) > 0:
                 next_position = self.random.choice(prefer_roads)
-                # print('CHOOSE: ', next_position)
             elif len(road_consider) > 0:
                 next_position = self.random.choice(road_consider)
             elif len(road_cells) > 0:
@@ -639,7 +548,6 @@ class RunnerAgent(Agent):
         # get to entrance trail at step 2 (rare case but possible)
         if self.pos == self.entrance_trail_pos:
             self.ready_to_enter_trail = True
-            # self.on_road = False
 
         # check and update intersection memory that has been passed
         self._set_memory_over_intersection_one_step()
@@ -657,10 +565,7 @@ class RunnerAgent(Agent):
             direction = self._check_direction_of_point(
                 self.pos, self.exit_trail_pos)
             trail_cells = self._get_trail_cell_around()
-            # print('TRAIL CELLS AROUND: ', trail_cells)
             prefer_trails = []
-            # print('Trail exit: ', self.exit_trail_pos)
-            # print(direction)
 
             # set a prefer roads list to take consideration
             self._set_prefer_roads(prefer_trails, direction, trail_cells)
@@ -672,7 +577,6 @@ class RunnerAgent(Agent):
                         prefer_trails.remove(cell)
                     if cell in trail_cells:
                         trail_cells.remove(cell)
-            # print('ROAD TO DEAD END: ', self.road_to_dead_end)
 
             trail_consider = trail_cells.copy()
 
@@ -688,7 +592,6 @@ class RunnerAgent(Agent):
 
             if len(prefer_trails) > 0:
                 next_position = self.random.choice(prefer_trails)
-                # print('CHOOSE: ', next_position)
             # consider roads with that no dead end, no road used before
             elif len(trail_consider) > 0:
                 next_position = self.random.choice(trail_consider)
@@ -715,7 +618,6 @@ class RunnerAgent(Agent):
             if min_distance == None or (estimate_distance < min_distance):
                 min_distance = estimate_distance
                 prefer_entrance = entrance_pos
-        # print(prefer_entrance)
 
         return prefer_entrance
 
@@ -847,7 +749,6 @@ class RunnerAgent(Agent):
         # List contains position of road cells that are from those 4 cells above
         possible_trails = []
         for pos in cells_around:
-            # x, y = pos
             for cell_object in self.model.background_cells:
                 if cell_object.pos == pos and cell_object.type == 'trail':
                     possible_trails.append(pos)
