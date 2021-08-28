@@ -3,6 +3,7 @@ from virtual_city import VirtualCityModel
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
 
+print('Initializing...')
 
 def cell(agent):
     portrayal = {'Shape': 'rect',
@@ -54,6 +55,7 @@ chart2 = ChartModule([{'Label': 'Going home (Pref 4)', 'Color': 'Yellow'}, {
                      'Label': 'Agents got home', 'Color': 'Red'}])
 server = ModularServer(VirtualCityModel, [grid, chart1, chart2], "Brentwood - Darlington", {'N': 500,
                                                                                             'width': 202, 'height': 84})
-# server.port = 8521
+# server.port = 8000
 
+print('Creating visualization...')
 server.launch()

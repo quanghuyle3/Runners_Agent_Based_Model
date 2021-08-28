@@ -11,7 +11,6 @@ class RunnerAgent(Agent):
         self.reset_runner_info()
         self.day_to_run = []
 
-
     def reset_runner_info(self):
         # Personal attributes
         self.type = 'runner'
@@ -29,7 +28,6 @@ class RunnerAgent(Agent):
         self.possibility_change_way_home = 0.2
         # Possibility rate that runner choose an alternative road only once at intersection on the way to park instead of following shostest path
         self.possibility_change_way_park = 0.1
-
 
         # NODE GONE MEMORY
         self.memory_node_osmid = []
@@ -69,7 +67,7 @@ class RunnerAgent(Agent):
         # NODE ATTRIBUTES
         self.current_node_index = None
         self.current_node_position = None
-        self.next_node_index = None  # osmid of node
+        self.next_node_index = None  # osmid of next node
         self.next_node_position = None  # grid coord of next node/intersection.
         self.previous_node_index = None
         self.previous_node_position = None
@@ -93,13 +91,14 @@ class RunnerAgent(Agent):
         self.key = None
 
         # POSSIBILITY RATE
-        # to turn while running
-        self.pr_turn_at_traffic_signals = None   # possibility rate to make a turn at the traffic signals point
-        self.pr_go_straight_at_traffic_signals = None    # possibility rate to go straight (get over) at the traffic signals point
-        self.pr_turn_on_ter = None  # possibility rate to make a turn on tertiary roads
-        self.pr_turn_on_sec = None  # possibility rate to make a turn on secondary roads
-        self.pr_turn_on_pri = None  # possibility rate to make a turn on primary roads
-        self.pr_turn_on_res = None  # possibility rate to make a turn on residential roads
+        # to make a turn at the traffic signals point
+        self.pr_turn_at_traffic_signals = None
+        # to go straight (get over) at the traffic signals point
+        self.pr_go_straight_at_traffic_signals = None
+        self.pr_turn_on_ter = None  # to make a turn on tertiary roads
+        self.pr_turn_on_sec = None  # to make a turn on secondary roads
+        self.pr_turn_on_pri = None  # to make a turn on primary roads
+        self.pr_turn_on_res = None  # to make a turn on residential roads
 
         # to go to the park at first
         self.pr_go_to_park = None
@@ -202,13 +201,11 @@ class RunnerAgent(Agent):
                 self.pr_turn_on_ter = 0.4
                 self.pr_turn_on_res = 0.3
 
-
             elif self.gender == 'female':
                 self.pr_turn_on_pri = 0.2
                 self.pr_turn_on_sec = 0.4
                 self.pr_turn_on_ter = 0.4
                 self.pr_turn_on_res = 0.3
-
 
         # POSSIBILITY TO GO TO PARK AT FIRST AND CONTINUE RUNNING ON THE PARK (when come across)
         # POSSIBILITY TO START WITH PREFERENCE 1 AT FIRST
@@ -260,7 +257,7 @@ class RunnerAgent(Agent):
         if self.fitness_level == 'low' or self.fitness_level == 'moderate':
             portion = self.random.randrange(60, 90)  # 60% - 90%
         elif self.fitness_level == 'high' or self.fitness_level == 'very_high':
-            portion = self.random.randrange(30,60)  # 30% - 60%
+            portion = self.random.randrange(30, 60)  # 30% - 60%
 
         self.distance_run_around_park = (
             portion / 100) * (self.distance_goal - self.distance_gone - self.estimate_distance_back_home)
@@ -284,7 +281,6 @@ class RunnerAgent(Agent):
         # if len of shortest path < 480m and fall within rate
         if length_shortest_path < 480 and self.random.random() < self.pr_go_to_park:
             self.preference = 'preference3'
-        # SET DISTANCE RUN AROUND PARK (inside preference3 function)
 
         if self.preference == None:
             if self.current_road_type == 'residential':
@@ -309,7 +305,7 @@ class RunnerAgent(Agent):
 
     def step(self):
 
-        # Reaasigne preference 2 for preference 1 if runners are on one way road (avoid error)
+        # Reaasigne preference 2 for preference 1 if runners are on one-way road (avoid error)
         if self.preference == 'preference2' and self.model.graph_edges.loc[self.current_road_index]['oneway'] == True:
             self.preference = 'preference1'
 
@@ -326,9 +322,8 @@ class RunnerAgent(Agent):
         elif self.want_to_go_home:
             self.preference4()
 
-
-
     # RUNNING ON ROADS AS STRAIGHT AS POSSIBLE, AND AVOID REPEATING ROUTES
+
     def preference1(self):
         if self.state == '_continue_forward':
             self.continue_forward()
@@ -349,18 +344,16 @@ class RunnerAgent(Agent):
         elif self.state == '_intersection':
             self.intersection3()
 
-
     # GET BACK TO THE INITIAL POSSITION AS SOON AS IT CAN BY FOLLOWING THE SHORTEST PATH
+
     def preference4(self):
         if self.state == '_continue_forward':
             self.continue_forward()
         elif self.state == '_intersection':
             self.intersection4()
 
-        # print('Distance gone: ', self.distance_gone)
-
     def continue_forward(self):
-        # Get to the destination if at the endpoint (before node) of road
+        # About to get to the destination if at the an endpoint (before node) of road
         if self.to_node == 'u' and self.current_cell_index_on_roadset == 0:
             # update previous node before current node
             self.previous_node_index = self.current_node_index
@@ -375,6 +368,7 @@ class RunnerAgent(Agent):
             # change state
             self.state = '_intersection'
 
+        # About to get to the destination if at the an endpoint (after node) of road
         elif self.to_node == 'v' and self.current_cell_index_on_roadset == len(self.current_road_cells) - 1:
             # update previous node before current node
             self.previous_node_index = self.current_node_index
@@ -385,7 +379,6 @@ class RunnerAgent(Agent):
             self.next_position = self.next_node_position
             # update distance
             self._adding_distance_goal()
-            # #print('run')
             # change state
             self.state = '_intersection'
 
@@ -438,7 +431,6 @@ class RunnerAgent(Agent):
         # if at dead end for first time --> u turn (intersection of 1)
         if len(self.possible_next_node_index_copy1) == 0:
             self.next_node_index = self.possible_next_node_index_copy[0]
-            # print('Meet dead end, make U-turn')
 
         # encounter traffic signals
         elif self.model.graph_nodes.loc[self.current_node_index]['highway'] == 'traffic_signals':
@@ -448,89 +440,49 @@ class RunnerAgent(Agent):
             if len(self.list_straight_road) == 0 or self.random.random() < self.pr_turn_at_traffic_signals:
                 self.next_node_index = self.random.choice([index for index in self.possible_next_node_index_copy1[:] if self.model.graph_edges.loc[(
                     self.current_node_index, index, 0)]['name'] != self.current_road_name])
-                # print('Encounter traffic signals, so make a turn')
 
             # or go straight
             else:
                 self.next_node_index = self.list_straight_road[0]
-                # print('Encounter traffic signals, so make a turn')
 
         # choose a random road if all roads around have been gone (intersection of 3-4)
         elif len(self.possible_next_node_index_copy2) == 0:
-            # self.next_node_index = self.possible_next_node_index_copy1[0]
             self.next_node_index = self.random.choice(
                 self.possible_next_node_index_copy1)
-            # print('All rounds have been gone, choose randomly one of the roads')
+
         # otherwise, take the road have the same name
-        # no same name, choose same road
-        # no same road, prefer primary, secondary, tertiary, residential
+        # no same name, choose same type of road
+        # no same type of road, prefer primary, secondary, tertiary, or residential
         else:
 
-            # print('consider list node')
             self._set_consider_list_node()
             for index in self.possible_next_node_index_copy2:
                 self.current_road_index = (self.current_node_index, index, 0)
                 # list node on current road name
                 if self.model.graph_edges.loc[self.current_road_index]['name'] == self.current_road_name:
-                    # print('add node in same road name')
                     self.list_node_on_same_road_name.append(index)
                 # list node on current road type
                 elif self.model.graph_edges.loc[self.current_road_index]['highway'] == self.current_road_type:
                     self.list_node_on_same_road_type.append(index)
-                    # print('add node in same road type')
                 # list node on other road types
                 else:
                     self.list_node_on_other_road_type.append(index)
-                    # print('add other road type')
-
-            # print('Memory node osmid: ',
-                  # self.memory_node_osmid)
-            # print('Memory deadend osmid: ',
-                  # self.memory_deadend_osmid)
 
             # prefer to choose same road name first
             if len(self.list_node_on_same_road_name) != 0:
-
                 self.next_node_index = self.list_node_on_same_road_name[0]
-                # print('choose same road name')
             # if not, choose same road type
             elif len(self.list_node_on_same_road_type) != 0:
                 self.next_node_index = self.random.choice(
                     self.list_node_on_same_road_type)
-                # print('choose same road type')
             # if not, choose the other road type
             elif len(self.list_node_on_other_road_type) != 0:
                 self.next_node_index = self.random.choice(
                     self.list_node_on_other_road_type)
-                # print('choose other road type')
 
-        # update current_road_index and next_node_position
-        self.current_road_index = (
-            self.current_node_index, self.next_node_index, 0)
-        self.next_node_position = self.model.cell_of_node[self.next_node_index]
-
-        # UPDATE NEW ROAD INFO
-        self.current_road_name = self.model.graph_edges.loc[self.current_road_index]['name']
-        self.current_road_type = self.model.graph_edges.loc[self.current_road_index]['highway']
-        self.current_road_cells = self.model.cells_of_edge[self.current_road_index]
-        self.current_road_length = self.model.graph_edges.loc[self.current_road_index]['length']
-
-        self.current_cell_index_on_roadset = 0
-
-        # WHAT IF THE NEXT NODE IS IN THE SAME OR NEXT CELL?
-        if len(self.current_road_cells) == 0:
-            self.next_position = self.next_node_position
-            self.switch_previous_and_current_node_index()
-            self._adding_distance_goal()
-            # keep state
-        else:
-            self.next_position = self.current_road_cells[self.current_cell_index_on_roadset]
-            # CHANGE STATE BACK TO _continue_forward
-            self.state = '_continue_forward'
-
-        # MAKE A MOVE
-        self.to_node = 'v'
-        self._move_agent_update_attributes()
+        self._update_road_info()
+        self._check_next_node_in_same_or_next_cell()
+        self._make_move()
 
     def intersection2(self):
         # STORE INTERSECTION FOR MEMORY
@@ -558,22 +510,20 @@ class RunnerAgent(Agent):
             # IGNORE STRAIGHT ROAD (ROAD HAS SAME NAME)
             self.possible_next_node_index_copy3 = []
             for index in self.possible_next_node_index_copy:
-                if self.model.graph_edges.loc[(self.current_node_index, index,0)]['name'] != self.current_road_name:
+                if self.model.graph_edges.loc[(self.current_node_index, index, 0)]['name'] != self.current_road_name:
                     self.possible_next_node_index_copy3.append(index)
 
             for index in self.possible_next_node_index_copy3:
-                type_road = self.model.graph_edges.loc[(self.current_node_index, index,0)]['highway']
+                type_road = self.model.graph_edges.loc[(
+                    self.current_node_index, index, 0)]['highway']
                 self.type_roads_around.append(type_road)
                 self.type_roads_around_nodes.append(index)
-
-
 
         # GET OUT OF A STRAIGHT ROAD THAT HAS LENGTH < 300
         if self.straight_road_length < 300 and self.endpoint1 != None and self.endpoint2 != None:
             if len(self.possible_next_node_index_copy) > 0:
                 self.next_node_index = self.random.choice(
                     self.possible_next_node_index_copy)
-                # print('Possible nodes: ', self.possible_next_node_index_copy)
                 self._update_endpoint_when_make_a_turn()
             else:
                 self.next_node_index = self.random.choice(
@@ -586,7 +536,6 @@ class RunnerAgent(Agent):
             index = self.type_roads_around.index('tertiary')
             self.next_node_index = self.type_roads_around_nodes[index]
             self._update_endpoint_when_make_a_turn()
-            # print('Decide to turn to tertiary')
 
         # turn to secondary
         # rate != None, have secondary road to turn, fall within rate
@@ -594,7 +543,6 @@ class RunnerAgent(Agent):
             index = self.type_roads_around.index('secondary')
             self.next_node_index = self.type_roads_around_nodes[index]
             self._update_endpoint_when_make_a_turn()
-            # print('Decide to turn to secondary')
 
         # turn to residential
         # rate != None, have residential road to turn, fall within rate
@@ -602,7 +550,6 @@ class RunnerAgent(Agent):
             index = self.type_roads_around.index('residential')
             self.next_node_index = self.type_roads_around_nodes[index]
             self._update_endpoint_when_make_a_turn()
-            # print('Decide to turn to residential')
 
         # turn to primary
         # rate != None, have primary road to turn, fall within rate
@@ -610,8 +557,6 @@ class RunnerAgent(Agent):
             index = self.type_roads_around.index('primary')
             self.next_node_index = self.type_roads_around_nodes[index]
             self._update_endpoint_when_make_a_turn()
-            # print('Decide to turn to primary')
-
 
         # ENCOUNTER TRAFFIC SIGNALS, MAKE A U TURN OR GO STRAIGHT
         elif self.model.graph_nodes.loc[self.current_node_index]['highway'] == 'traffic_signals':
@@ -625,19 +570,16 @@ class RunnerAgent(Agent):
             # otherwise, make U-turn
             else:
                 self._set_node_to_make_u_turn_on_straight_road()
-                # print('Ecounter traffic signals, make U-turn')
-
                 # update endpoint
-                self._update_endpoint_when_u_turn()
+                self._update_endpoint_when_make_u_turn()
 
         # CHOOSE NEXT NODE IN THE SAME ROAD (straight road)
         # if at dead end for first time --> u turn (intersection of 1)
         elif len(self.possible_next_node_index_copy) == 0 and len(self.model.graph_edges.loc[self.current_node_index]['osmid']) == 1:
             self.next_node_index = self.previous_node_index
-            # print('Meet dead end, make U-turn')
 
             # Store one endpoint if not set yet
-            self._update_endpoint_when_u_turn()
+            self._update_endpoint_when_make_u_turn()
 
         else:
              # choose road forward (straight road)
@@ -646,7 +588,6 @@ class RunnerAgent(Agent):
                 self.current_road_index = (self.current_node_index, index, 0)
                 # list node on current road name
                 if self.model.graph_edges.loc[self.current_road_index]['name'] == self.current_road_name:
-                    # print('add node in same road name')
                     self.next_node_index = index
                     have_forward_road = True
                     break
@@ -655,78 +596,40 @@ class RunnerAgent(Agent):
                 self._set_node_to_make_u_turn_on_straight_road()
 
                 # Store one endpoint if not set yet
-                self._update_endpoint_when_u_turn()
-                # print('No straight forward, theres only other roads, make U-turn')
-        # #print('Endpoint1: ', self.endpoint1)
-        # #print('Endpoint2: ', self.endpoint2)
-        # print('Memory node osmid: ',
-              # self.memory_node_osmid)
-        # print('Memory deadend osmid: ',
-              # self.memory_deadend_osmid)
+                self._update_endpoint_when_make_u_turn()
 
-        # update current_road_index and next_node_position
-        self.current_road_index = (
-            self.current_node_index, self.next_node_index, 0)
-        self.next_node_position = self.model.cell_of_node[self.next_node_index]
+        self._update_road_info()
+        self._check_next_node_in_same_or_next_cell()
+        self._make_move()
 
-        # UPDATE NEW ROAD INFO
-        self.current_road_name = self.model.graph_edges.loc[self.current_road_index]['name']
-        self.current_road_type = self.model.graph_edges.loc[self.current_road_index]['highway']
-        self.current_road_cells = self.model.cells_of_edge[self.current_road_index]
-        self.current_road_length = self.model.graph_edges.loc[self.current_road_index]['length']
-
-        self.current_cell_index_on_roadset = 0
-
-        # WHAT IF THE NEXT NODE IS IN THE SAME OR NEXT CELL?
-        if len(self.current_road_cells) == 0:
-            self.next_position = self.next_node_position
-            self.switch_previous_and_current_node_index()
-            self._adding_distance_goal()
-            # keep state
-        else:
-            self.next_position = self.current_road_cells[self.current_cell_index_on_roadset]
-            # CHANGE STATE BACK TO _continue_forward
-            self.state = '_continue_forward'
-
-        # MAKE A MOVE
-        self.to_node = 'v'
-        self._move_agent_update_attributes()
-
-    def _update_endpoint_when_u_turn(self):
+    def _update_endpoint_when_make_u_turn(self):
         if self.endpoint1 == None:
             self.endpoint1 = self.current_node_index
             self.start_from_one_endpoint = True
         elif self.endpoint2 == None:
             self.endpoint2 = self.current_node_index
             self.start_from_one_endpoint = False
+
     def _update_endpoint_when_make_a_turn(self):
         # reset endpoint for new road
         self.straight_road_length = 0
         self.endpoint1 = None
         self.endpoint2 = None
-        self.start_from_one_endpoint = False # since runner could turn to the middle of road
+        # since runner could turn to the middle of road
+        self.start_from_one_endpoint = False
 
     def _set_node_to_make_u_turn_on_straight_road(self):
         # U-turn on any road
         if self.previous_node_index != None:
             self.next_node_index = self.previous_node_index
-            # print('run1')
         # U-turn on the init road
         elif self.current_node_index == self.current_road_index[0]:
             self.next_node_index = self.current_road_index[1]
-            # print('run2')
         elif self.current_node_index == self.current_road_index[1]:
-            # print('current_road_index: ', self.current_road_index)
-            # print('current_node_index: ', self.current_node_index)
             self.next_node_index = self.current_road_index[0]
-            # print('next_node_index: ', self.next_node_index)
-            # print('run3')
 
     def intersection3(self):
 
-        # SET DISTA
-
-        # CHANGE MODE TO RUNNING AROUND PARK IF RUNNER STAND AT TARGET NODE ON THIS PARK
         # Change to mode running on park once runner stand on the node of park
         if self.current_node_index == self.target_node_coming_park:
             self.on_the_park = True
@@ -754,16 +657,12 @@ class RunnerAgent(Agent):
             self.possible_next_node_index_copy = [
                 index for index in self.possible_next_node_index if index != self.previous_node_index]
 
-        # FIND THE SHORTEST PATH AND THE NODE OF THE PARK GOING TO
-
         # got to the node of park on the initial road
         if self.current_node_index in self.model.footway_all_nodes:
             self.on_the_park = True
 
         # ON THE WAY TO PARK
         if not self.on_the_park:
-            # #print('ALREADY CHANGE MODE')
-            # #print(self.on_the_park)
             # if it just start, set the next node index as the current node index
             if self.current_node_index == None:
                 self.current_node_index = self.next_node_index
@@ -780,16 +679,12 @@ class RunnerAgent(Agent):
                     shortest_length = length
                     self.target_node_coming_park = index
 
-            # print('current_node_index: ', self.current_node_index)
-            # print('target_node_coming_park: ', self.target_node_coming_park)
-
             # get shortest path to that node
             self.shortest_path = nx.shortest_path(
                 self.model.graph, self.current_node_index, self.target_node_coming_park, weight='length')
 
             # choose to follow the shortest path
             if self.random.random() > self.possibility_change_way_park:
-                # if self.random.random() > 0:
                 self.next_node_index = self.shortest_path[1]
             # if not, choose one of the way around that current node
             else:
@@ -803,69 +698,32 @@ class RunnerAgent(Agent):
         # GET TO THE PARK ALREADY AND RUNNING AROUND
         elif self.on_the_park:
 
-            # SET NODE SET AROUND CURRENT NODE OF PARK
+            # set the set node around the current node on park if don't have yet
             if self.current_set_node_on_park == None:
                 if self.current_node_index in self.model.footway_nodes_set1:
-                    # print('Current node index: ', self.current_node_index)
                     self.current_set_node_on_park = self.model.footway_nodes_set1[:]
-                    # print('current_set_node_on_park: ',
-                          # self.current_set_node_on_park)
-                    # print('Set1')
                 elif self.current_node_index in self.model.footway_nodes_set2:
-                    # print('Current node index: ', self.current_node_index)
                     self.current_set_node_on_park = self.model.footway_nodes_set2[:]
-                    # print('current_set_node_on_park: ',
-                          # self.current_set_node_on_park)
-                    # print('Set2')
 
-            # SET DISTANCE RUNNING ON PARK IF DON'T HAVE YET
+            # set distance running on park if don't have yet
             if self.distance_run_around_park == None:
                 self._set_distance_run_around_park()
 
-            # CHOOSE NEXT CELL FROM THE SET DATA AND AVOID PREVIOUS ROAD AS MUCH AS IT CAN
+            # choose next cell from the set data and avoid previous road as much as it can
             if self.target_node_running_around_park == None:
                 self.target_node_running_around_park = self.random.choice(
                     [index for index in self.current_set_node_on_park if index != self.current_node_index and index != self.previous_node_index])
 
-            # print('target_node_running_around_park: ', self.target_node_running_around_park)
             self.possible_next_node_index = nx.shortest_path(
                 self.model.graph, self.current_node_index, self.target_node_running_around_park, weight='length')
-            # print('possible_next_node_index: ', self.possible_next_node_index)
             self.next_node_index = self.possible_next_node_index[1]
-            # print('next_node_index: ', self.next_node_index)
 
-        self.next_node_position = self.model.cell_of_node[self.next_node_index]
-        self.current_road_index = (
-            self.current_node_index, self.next_node_index, 0)
-        # print('CHOSE CLOSEST ROUTE')
-
-        # UPDATE NEW ROAD INFO
-        self.current_road_name = self.model.graph_edges.loc[self.current_road_index]['name']
-        self.current_road_type = self.model.graph_edges.loc[self.current_road_index]['highway']
-        self.current_road_cells = self.model.cells_of_edge[self.current_road_index]
-        self.current_road_length = self.model.graph_edges.loc[self.current_road_index]['length']
-
-        self.current_cell_index_on_roadset = 0
-
-        # WHAT IF THE NEXT NODE IS IN THE SAME OR NEXT CELL?
-        if len(self.current_road_cells) == 0:
-            self.next_position = self.next_node_position
-            self.switch_previous_and_current_node_index()
-            self._adding_distance_goal()
-            # print('move to node next to current node')
-            # keep state
-        else:
-            self.next_position = self.current_road_cells[self.current_cell_index_on_roadset]
-            # CHANGE STATE BACK TO _continue_forward
-            self.state = '_continue_forward'
-
-        # MAKE A MOVE
-        self.to_node = 'v'
-        self._move_agent_update_attributes()
+        self._update_road_info()
+        self._check_next_node_in_same_or_next_cell()
+        self._make_move()
 
         # REACH THE DISTANCE SET TO RUN AROUND PARK, THEN GO HOME OR GET OUT OF PARK
         if self.distance_will_get_out_park != None and self.distance_gone > self.distance_will_get_out_park and not self.want_to_go_home:
-            # print('Change to pre1')
             self.preference = 'preference2'
 
     def intersection4(self):
@@ -899,9 +757,7 @@ class RunnerAgent(Agent):
             self.possible_next_node_index_copy = [
                 index for index in self.possible_next_node_index if index != self.previous_node_index]
 
-        # CHOOSE NEXT NODE WITH THE AIM TO GET BACK HOME AS SOON AS POSSIBLE BUT THERE'S POSSIBILITY TO NOT FOLLOW SHORTEST_PATH
-
-        # stand on the init_indexx
+        # stand on the init_index
         if self.current_node_index == self.init_index:
             u, v, k = self.init_road_index
             if self.current_node_index == u:
@@ -916,9 +772,8 @@ class RunnerAgent(Agent):
             self.next_node_index = self.shortest_path[1]
 
         # change, want to explore/try a section of road
-        # select randomly for now
+        # select randomly a road for this step
         else:
-            # print('CHOOSE DIFFERENT ROAD')
             if len(self.possible_next_node_index_copy) > 0:
                 self.next_node_index = self.random.choice(
                     self.possible_next_node_index_copy)
@@ -926,10 +781,15 @@ class RunnerAgent(Agent):
                 self.next_node_index = self.random.choice(
                     self.possible_next_node_index)
 
-        self.next_node_position = self.model.cell_of_node[self.next_node_index]
+        self._update_road_info()
+        self._check_next_node_in_same_or_next_cell()
+        self._make_move()
+
+    def _update_road_info(self):
+        # update current_road_index and next_node_position
         self.current_road_index = (
             self.current_node_index, self.next_node_index, 0)
-        # print('CHOSE CLOSEST ROUTE')
+        self.next_node_position = self.model.cell_of_node[self.next_node_index]
 
         # UPDATE NEW ROAD INFO
         self.current_road_name = self.model.graph_edges.loc[self.current_road_index]['name']
@@ -939,18 +799,19 @@ class RunnerAgent(Agent):
 
         self.current_cell_index_on_roadset = 0
 
+    def _check_next_node_in_same_or_next_cell(self):
         # WHAT IF THE NEXT NODE IS IN THE SAME OR NEXT CELL?
         if len(self.current_road_cells) == 0:
             self.next_position = self.next_node_position
             self.switch_previous_and_current_node_index()
             self._adding_distance_goal()
-            # print('move to node next to current node')
             # keep state
         else:
             self.next_position = self.current_road_cells[self.current_cell_index_on_roadset]
             # CHANGE STATE BACK TO _continue_forward
             self.state = '_continue_forward'
 
+    def _make_move(self):
         # MAKE A MOVE
         self.to_node = 'v'
         self._move_agent_update_attributes()
@@ -965,7 +826,6 @@ class RunnerAgent(Agent):
                 self.current_road_cells)) * self.current_road_length), 0)
             self.distance_gone += self.amount_added
             self.start_on_road = False
-            # print('add')
         else:
             self.amount_added = self.current_road_length
             self.distance_gone += self.amount_added
@@ -999,11 +859,6 @@ class RunnerAgent(Agent):
         if self.start_from_one_endpoint:
             self.straight_road_length += self.amount_added
 
-        # # no need to add more, once added the length of last section and at the end of other point
-        # if self.start_from_one_endpoint and self.finish_at_one_endpoint:
-        #     self.start_from_one_endpoint = False
-        #     self.finish_at_one_endpoint = False
-
     def _move_agent_update_attributes(self):
         x, y = self.next_position
 
@@ -1023,4 +878,3 @@ class RunnerAgent(Agent):
             self.want_to_go_home = True
             self.begin_going_home = True
             self.preference = 'preference4'
-

@@ -191,7 +191,7 @@ class VirtualCityModel(Model):
                 plt.show()
                 self.running = False
 
-            print('Preapre for the next day...')
+            print('Preapring for the next day...')
             if self.calendar_index != (len(self.calendar) - 1):
                 self.next_day()
                 print('\nTODAY: ', self.current_day)
@@ -392,6 +392,7 @@ class VirtualCityModel(Model):
         for agent in self.agent_objects:
             agent.distance_goal = agent.weekly_distance_goal / \
                 len(self.calendar)
+            # (for quick testing)
             # agent.distance_goal = agent.weekly_distance_goal / 400
 
     def _set_nodes(self):
